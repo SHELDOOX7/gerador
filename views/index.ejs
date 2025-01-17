@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Vendas - Gerador de Contas</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url('https://cdn.discordapp.com/attachments/1315944296519831552/1329860026101141586/aesthetic-youtube-banner-background-2560-x-1440-9xxaikq0rpy1rm01.png?ex=678be029&is=678a8ea9&hm=d5e0e6bdabcd4cb024362c3578de5c6ad99c4efd0f724131c40ca6c96621176c&');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-position: center;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #fff;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 2.5rem;
+      color: #fff;
+    }
+
+    p {
+      color: #ddd;
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      width: 90%;
+      max-width: 1200px;
+    }
+
+    .card {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://cdn.discordapp.com/attachments/1315944296519831552/1329860247187099698/fundo-moderno-com-linhas_1361-3533.png?ex=678be05e&is=678a8ede&hm=7c427e1eeceb76bff98ad6deffac031e67d9efe8239700abd92085176240a6a0&') no-repeat center center / cover;
+      opacity: 0.8;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .card h2 {
+      position: relative;
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 10px;
+      z-index: 1;
+    }
+
+    .card p {
+      position: relative;
+      font-size: 1rem;
+      color: #ddd;
+      z-index: 1;
+    }
+
+    .card button {
+      position: relative;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 15px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      z-index: 1;
+    }
+
+    .card button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #fff;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔑 Sistema de Vendas - Gerador de Contas</h1>
+  <p>Escolha uma das opções abaixo para gerar dados personalizados. O nome, senha e o envio via webhook serão exibidos logo abaixo.</p>
+
+  <div class="grid">
+    <!-- Conta Premium -->
+    <div class="card">
+      <h2>Conta Premium</h2>
+      <p>Gere uma conta premium com benefícios exclusivos.</p>
+      <button onclick="gerarDados('premium')">Gerar Conta Premium</button>
+      <div class="result" id="result-premium"></div>
+    </div>
+
+    <!-- Conta Level Máximo -->
+    <div class="card">
+      <h2>Conta Level Máximo</h2>
+      <p>Gere uma conta com nível máximo e vantagens.</p>
+      <button onclick="gerarDados('max-level')">Gerar Conta Level Máximo</button>
+      <div class="result" id="result-max-level"></div>
+    </div>
+
+    <!-- Conta Random -->
+    <div class="card">
+      <h2>Conta Random</h2>
+      <p>Gere uma conta aleatória com características únicas.</p>
+      <button onclick="gerarDados('random')">Gerar Conta Random</button>
+      <div class="result" id="result-random"></div>
+    </div>
+
+    <!-- Conta Premium Hard -->
+    <div class="card">
+      <h2>Conta Premium Hard</h2>
+      <p>Gere uma conta premium com configurações avançadas.</p>
+      <button onclick="gerarDados('premium-hard')">Gerar Conta Premium Hard</button>
+      <div class="result" id="result-premium-hard"></div>
+    </div>
+  </div>
+
+  <script>
+    async function gerarDados(tipoConta) {
+      try {
+        const response = await fetch(`/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ tipoConta }), 
+        });
+
+        if (!response.ok) throw new Error('Erro ao gerar dados');
+
+        const { nome, senha, mensagem } = await response.json();
+
+        const resultId = `result-${tipoConta}`;
+        const resultDiv = document.getElementById(resultId);
+        resultDiv.innerHTML = `
+          <p><strong>Nome:</strong> ${nome}</p>
+          <p><strong>Senha:</strong> ${senha}</p>
+          <p>✅ ${mensagem}</p>
+        `;
+        resultDiv.style.display = 'block';
+      } catch (error) {
+        console.error(error.message);
+        alert('Ocorreu um erro ao gerar os dados. Tente novamente.');
+      }
+    }
+  </script>
+</body>
+</html>
